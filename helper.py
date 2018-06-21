@@ -45,6 +45,7 @@ def update_id_blog():
 next_events = []
 messages = []
 def webhook_helper():
+    print("running webhook")
     global next_events
     global blog_ids
     global messages
