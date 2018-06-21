@@ -78,5 +78,5 @@ def webhook_helper():
 
 update_id_blog()
 sched.add_job(update_id_blog, 'interval', hours=1)
-sched.add_job(webhook_helper, 'interval', seconds=5)
+sched.add_job(webhook_helper, 'interval', seconds=30)
 sched.start()
