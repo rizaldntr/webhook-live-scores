@@ -81,6 +81,6 @@ def webhook_helper():
                         messages[idx] = part['data']['TranslatedEventName']
 
 update_id_blog()
-sched.add_job(update_id_blog, 'interval', hours=1)
+sched.add_job(update_id_blog, 'interval', minutes=3)
 sched.add_job(webhook_helper, 'interval', seconds=30)
 sched.start()
