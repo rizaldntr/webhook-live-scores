@@ -2,6 +2,9 @@ import datetime
 import requests
 import json
 from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.triggers.combining import AndTrigger
+from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.triggers.cron import CronTrigger
 sched = BlockingScheduler()
 
 CURRENT_URL = "https://world-cup-json.herokuapp.com/matches/current"
@@ -66,12 +69,12 @@ def webhook_helper():
             parts = item['body']['parts']
 
             for part in parts:
-                if part['datasource'] == "LivePosts":
-                    if messages[idx] != part['data']['Text'][3:-5]:
-                        post_to_webhook(part['data']['Text'][3:-5])
-                        print (part['data']['Text'][3:-5])
-                        messages[idx] = part['data']['Text'][3:-5]
-                elif part['datasource'] == "MatchEvents":
+                # if part['datasource'] == "LivePosts":
+                #     if messages[idx] != part['data']['Text'][3:-5]:
+                #         post_to_webhook(part['data']['Text'][3:-5])
+                #         print (part['data']['Text'][3:-5])
+                #         messages[idx] = part['data']['Text'][3:-5]
+                if part['datasource'] == "MatchEvents":
                     if messages[idx] != part['data']['TranslatedEventName']:
                         post_to_webhook(part['data']['TranslatedEventName'])
                         print (part['data']['TranslatedEventName'])
