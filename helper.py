@@ -1,47 +1,45 @@
 import datetime
 import requests
 import json
+import config
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.combining import AndTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
-sched = BlockingScheduler()
 
-CURRENT_URL = "https://world-cup-json.herokuapp.com/matches/current"
-LIVE_BLOG_URL = "https://livebloggingdistributionapi.fifa.com/api/v1/blogs/{}/events?since={}Z"
-LIST_ALL_BLOGS_URL = "https://livebloggingdistributionapi.fifa.com/api/v1/FIFA%20FORGE/en-GB/blogs?tag.IdSeason=254645&$limit=64"
-AUTH_KEY = "LiveBlogging key=1FBA2B07-6619-4BF3-9DE7-F93FFBDE076C"
-headers = {'authorization': AUTH_KEY}
-WEBHOOK_URL = "https://wc-flask.herokuapp.com/webhook"
+CONFIG = config.ProductionConfig
+
+sched = BlockingScheduler()
+headers = {'authorization': CONFIG.AUTH_KEY}
 
 # Get id blog
 blog_ids = []
 
 def post_to_webhook(message):
-    requests.post(WEBHOOK_URL, json={"message": message})
+    requests.post(CONFIG.WEBHOOK_URL, json={"message": message})
 
 def update_id_blog():
     global blog_ids
-    r = requests.get(CURRENT_URL)
+    r = requests.get(CONFIG.CURRENT_URL)
     datas = json.loads(r.content)
 
-    r = requests.get(LIST_ALL_BLOGS_URL, headers=headers)
+    r = requests.get(CONFIG.LIST_ALL_BLOGS_URL, headers=headers)
     items = json.loads(r.content)['items']
 
     if len(datas) == 0:
         blog_ids = []
         return
-    
+
     fifa_id = []
     for data in datas:
         fifa_id.append(data['fifa_id'])
-    
+
     index = 0
     for item in items:
         if fifa_id[index] in item['title']:
             blog_ids.append(item['id'])
             index += 1
-        
+
         if index == len(fifa_id):
             return
 
@@ -57,7 +55,7 @@ def webhook_helper():
         times = [ datetime.datetime.utcnow().isoformat() for i in range(len(blog_ids))]
         messages = ["" for i in range(len(blog_ids))]
         for idx, time in enumerate(times):
-            URL = LIVE_BLOG_URL.format(blog_ids[idx], time)
+            URL = CONFIG.LIVE_BLOG_URL.format(blog_ids[idx], time)
             next_events.append(URL)
 
     for idx, event in enumerate(next_events):
