@@ -15,8 +15,10 @@ headers = {'authorization': CONFIG.AUTH_KEY}
 # Get id blog
 blog_ids = []
 
+
 def post_to_webhook(message):
     requests.post(CONFIG.WEBHOOK_URL, json={"message": message})
+
 
 def update_id_blog():
     global blog_ids
@@ -43,8 +45,11 @@ def update_id_blog():
         if index == len(fifa_id):
             return
 
+
 next_events = []
 messages = []
+
+
 def webhook_helper():
     print("running webhook")
     global next_events
@@ -52,7 +57,8 @@ def webhook_helper():
     global messages
     times = []
     if len(next_events) == 0:
-        times = [ datetime.datetime.utcnow().isoformat() for i in range(len(blog_ids))]
+        times = [datetime.datetime.utcnow().isoformat()
+                 for i in range(len(blog_ids))]
         messages = ["" for i in range(len(blog_ids))]
         for idx, time in enumerate(times):
             URL = CONFIG.LIVE_BLOG_URL.format(blog_ids[idx], time)
@@ -67,16 +73,17 @@ def webhook_helper():
             parts = item['body']['parts']
 
             for part in parts:
-                # if part['datasource'] == "LivePosts":
-                #     if messages[idx] != part['data']['Text'][3:-5]:
-                #         post_to_webhook(part['data']['Text'][3:-5])
-                #         print (part['data']['Text'][3:-5])
-                #         messages[idx] = part['data']['Text'][3:-5]
+                if part['datasource'] == "LivePosts":
+                    if messages[idx] != part['data']['Text'][3:-5]:
+                        post_to_webhook(part['data']['Text'][3:-5])
+                        print(part['data']['Text'][3:-5])
+                        messages[idx] = part['data']['Text'][3:-5]
                 if part['datasource'] == "MatchEvents":
                     if messages[idx] != part['data']['TranslatedEventName']:
                         post_to_webhook(part['data']['TranslatedEventName'])
-                        print (part['data']['TranslatedEventName'])
+                        print(part['data']['TranslatedEventName'])
                         messages[idx] = part['data']['TranslatedEventName']
+
 
 update_id_blog()
 sched.add_job(update_id_blog, 'interval', minutes=3)
